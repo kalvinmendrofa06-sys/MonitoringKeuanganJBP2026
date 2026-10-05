@@ -1068,8 +1068,8 @@ select option{color:var(--text)}
       if (loadingEl) loadingEl.style.display = "block";
       if (btnSubmit) btnSubmit.disabled = true;
 
-      // Kirim data ke Google Apps Script Web App
-      const API_URL = "https://script.google.com/macros/s/AKfycbzd97QhUEPE79UxKSOfy9tkdob2peji0QGUXC81G6bcGQzqqHrE8r6OAdUYxZ8-Sr0/exec";
+      // Panggil backend Google Apps Script melalui HTTP POST
+      const API_URL = "https://script.google.com/macros/s/AKfycbzJc2ws6DUlHi1TWw9mod-dHZMJ3cX5J58b3NCdLBSIuAPthCP7fQT-xutE3lgnaDbE/exec";
 
       fetch(API_URL, {
         method: "POST",

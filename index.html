@@ -1068,63 +1068,31 @@ select option{color:var(--text)}
       if (loadingEl) loadingEl.style.display = "block";
       if (btnSubmit) btnSubmit.disabled = true;
 
-      // Kirim ke Google Apps Script dari GitHub Pages.
-      // Karena cross-origin, pengiriman memakai no-cors.
-      // Kepastian berhasil dicek kembali ke backend berdasarkan ID transaksi.
-      const API_URL = "https://script.google.com/macros/s/AKfycbxn2BN7iRw5qwGQHcr3jVEa7OGVwUlOb0y8tiJucrPNdHjL_AympOuqyLJ61gYSp1i_/exec";
-      const clientId = "TRX-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-      data.clientId = clientId;
+      // Kirim data ke Google Apps Script Web App
+      const API_URL = "https://script.google.com/macros/s/AKfycbzhsg92ec8VtrqZKCXDNHCiRGcoYmrPjVrKwNP5XsoK17xOZExddWYTI3zrx4LGNIzZ/exec";
 
       fetch(API_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: {
           "Content-Type": "text/plain;charset=utf-8"
         },
         body: JSON.stringify(data)
-      }).then(function() {
-        cekStatusTransaksi(clientId, 0);
-      }).catch(function(error) {
-        alert("Gagal mengirim data:\n" + error.message);
+      })
+      .then(async function(response) {
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.message || "Gagal mengirim data.");
+        }
+
+        alert(result.message || "Data berhasil dikirim!");
+        location.reload();
+      })
+      .catch(function(error) {
+        alert("Terjadi kesalahan:\n" + error.message);
         if (loadingEl) loadingEl.style.display = "none";
         if (btnSubmit) btnSubmit.disabled = false;
       });
-
-      function cekStatusTransaksi(id, percobaan) {
-        if (percobaan >= 12) {
-          alert("Data belum dapat dikonfirmasi tersimpan. Silakan cek Sheet sebelum mengirim ulang.");
-          if (loadingEl) loadingEl.style.display = "none";
-          if (btnSubmit) btnSubmit.disabled = false;
-          return;
-        }
-
-        const callbackName = "cekTransaksi_" + Date.now() + "_" + Math.random().toString(36).slice(2);
-        const script = document.createElement("script");
-        const timeout = setTimeout(function() {
-          cleanup();
-          cekStatusTransaksi(id, percobaan + 1);
-        }, 3000);
-
-        window[callbackName] = function(result) {
-          clearTimeout(timeout);
-          cleanup();
-
-          if (result && result.success && result.found) {
-            alert("Data berhasil disimpan!\nID Transaksi: " + (result.idTransaksi || id));
-            location.reload();
-          } else {
-            cekStatusTransaksi(id, percobaan + 1);
-          }
-        };
-
-        function cleanup() {
-          delete window[callbackName];
-          if (script.parentNode) script.parentNode.removeChild(script);
-        }
-
-        script.src = API_URL + "?action=check&clientId=" + encodeURIComponent(id) + "&callback=" + encodeURIComponent(callbackName) + "&_=" + Date.now();
-        document.body.appendChild(script);
-      }
     }
 
     // Inisialisasi awal saat halaman dibuka

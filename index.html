@@ -1068,25 +1068,23 @@ select option{color:var(--text)}
       if (loadingEl) loadingEl.style.display = "block";
       if (btnSubmit) btnSubmit.disabled = true;
 
-      // Kirim ke Apps Script melalui endpoint /api Netlify
-      // Netlify akan meneruskan request ini ke Web App Apps Script.
-      fetch("/api", {
+      // Kirim data ke Google Apps Script Web App
+      const API_URL = "https://script.google.com/macros/s/AKfycbw_4etgGmVbE-6wtZF7WtDQiJ2svVObsSrhnHIo26A0qESzU_N-n5Q2IL5DTvvKCkOi/exec";
+
+      fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "text/plain;charset=utf-8"
         },
         body: JSON.stringify(data)
       })
-      .then(function(response) {
-        if (!response.ok) {
-          throw new Error("Server mengembalikan status " + response.status);
+      .then(async function(response) {
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.message || "Gagal mengirim data.");
         }
-        return response.json();
-      })
-      .then(function(result) {
-        if (!result || !result.success) {
-          throw new Error((result && result.message) || "Data gagal diproses.");
-        }
+
         alert(result.message || "Data berhasil dikirim!");
         location.reload();
       })
